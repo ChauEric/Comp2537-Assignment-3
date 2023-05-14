@@ -1,15 +1,51 @@
 const PAGE_SIZE = 10;
 let currentPage = 1;
 let pokemons = [];
+let selected_types = [];
 
 const updatePaginationDiv = (currentPage, numPages) => {
-  $("#pagination").empty();
+  $("#pagination").empty().addClass("d-flex justify-content-center");
 
-  const startPage = 1;
-  const endPage = numPages;
+  //Start and end pages to be displayed in pagination.
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(numPages, currentPage + 2);
+
+  //adjust the pagination based on the location of the user.
+  if (endPage - startPage < 4) {
+    if (currentPage <= 3) {
+      endPage = Math.min(numPages, 5);
+    } else {
+      startPage = Math.max(1, numPages - 4);
+    }
+  }
+
+  if (currentPage > 1) {
+    $("#pagination").append(`
+      <button class="btn btn-primary page ml-1 numberedButtons" value="${
+        currentPage - 1
+      }">
+        Previous
+      </button>
+    `);
+  }
+
   for (let i = startPage; i <= endPage; i++) {
     $("#pagination").append(`
-    <button class="btn btn-primary page ml-1 numberedButtons" value="${i}">${i}</button>
+      <button class="btn btn-primary page ml-1 numberedButtons ${
+        i === currentPage ? "active" : ""
+      }" value="${i}">
+        ${i}
+      </button>
+    `);
+  }
+
+  if (currentPage < numPages) {
+    $("#pagination").append(`
+      <button class="btn btn-primary page ml-1 numberedButtons" value="${
+        currentPage + 1
+      }">
+        Next
+      </button>
     `);
   }
 };
@@ -35,6 +71,18 @@ const paginate = async (currentPage, PAGE_SIZE, pokemons) => {
   });
 };
 
+const filter_div = async () => {
+  $("#pokeTypesFilter").empty();
+  const res = await axios.get("https://pokeapi.co/api/v2/type");
+  const types = res.data.results;
+  for (const type of types) {
+    $("#pokeTypesFilter").append(`
+      <input id="${type.name}" class="typeFilter" type="checkbox" name="${type.name}" value="${type.name}">
+      <label htmlfor="${type.name}" for="${type.name}">${type.name}</label>
+    `);
+  }
+};
+
 const setup = async () => {
   // test out poke api using axios here
 
@@ -47,6 +95,7 @@ const setup = async () => {
   paginate(currentPage, PAGE_SIZE, pokemons);
   const numPages = Math.ceil(pokemons.length / PAGE_SIZE);
   updatePaginationDiv(currentPage, numPages);
+  filter_div();
 
   // pop up modal when clicking on a pokemon card
   // add event listener to each pokemon card
