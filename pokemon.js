@@ -5,7 +5,7 @@ let pokemons = [];
 let selected_types = [];
 let maxPages = Math.ceil(MAX_POKEMON / PAGE_SIZE);
 
-const updatePaginationDiv = (currentPage, numPages) => {
+const updatePaginationDiv = async (currentPage, numPages) => {
   $("#pagination").empty().addClass("d-flex justify-content-center");
 
   let startPage = Math.max(1, currentPage - 2);
@@ -88,6 +88,25 @@ const filter_div = async () => {
       <label htmlfor="${type.name}" for="${type.name}">${type.name}</label>
     `);
   }
+  const checkboxes = document.querySelectorAll(".typeFilter");
+  let PokeType = [];
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", (event) => {
+      PokeType.push(checkbox.value);
+      if (event.target.checked) {
+        // Checkbox is checked
+        console.log(PokeType);
+      } else {
+        // Checkbox is not checked
+        const index = PokeType.indexOf(checkbox.value);
+        if (index > -1) {
+          PokeType.splice(index, 1);
+          console.log(PokeType);
+        }
+      }
+    });
+  });
 };
 
 const displayNumberOfPokemon = (numberofPokemon) => {
@@ -107,7 +126,7 @@ const setup = async () => {
   let response = await axios.get(
     "https://pokeapi.co/api/v2/pokemon?offset=0&limit=810"
   );
-  pokemons = response.data.results;
+  pokemons = await response.data.results;
 
   paginate(currentPage, PAGE_SIZE, pokemons);
   const numPages = Math.ceil(pokemons.length / PAGE_SIZE);
