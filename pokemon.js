@@ -1,16 +1,16 @@
 const PAGE_SIZE = 10;
+const MAX_POKEMON = 810;
 let currentPage = 1;
 let pokemons = [];
 let selected_types = [];
+let maxPages = Math.ceil(MAX_POKEMON / PAGE_SIZE);
 
 const updatePaginationDiv = (currentPage, numPages) => {
   $("#pagination").empty().addClass("d-flex justify-content-center");
 
-  //Start and end pages to be displayed in pagination.
   let startPage = Math.max(1, currentPage - 2);
   let endPage = Math.min(numPages, currentPage + 2);
 
-  //adjust the pagination based on the location of the user.
   if (endPage - startPage < 4) {
     if (currentPage <= 3) {
       endPage = Math.min(numPages, 5);
@@ -48,6 +48,13 @@ const updatePaginationDiv = (currentPage, numPages) => {
       </button>
     `);
   }
+  if (currentPage != maxPages) {
+    $("#pagination").append(`
+        <button class="btn btn-primary page ml-1 numberedButtons" value="${maxPages}">
+          Last
+        </button>
+      `);
+  }
 };
 
 const paginate = async (currentPage, PAGE_SIZE, pokemons) => {
@@ -83,6 +90,16 @@ const filter_div = async () => {
   }
 };
 
+const displayNumberOfPokemon = (numberofPokemon) => {
+  let show = 0;
+
+  if (currentPage == maxPages) show = numberofPokemon % MAX_POKEMON;
+  else show = Math.min(10, numberofPokemon);
+  document.querySelector(
+    ".numberOfPokemon"
+  ).innerHTML = `<h3>Showing ${show} out of ${numberofPokemon} Pokemon:`;
+};
+
 const setup = async () => {
   // test out poke api using axios here
 
@@ -96,6 +113,7 @@ const setup = async () => {
   const numPages = Math.ceil(pokemons.length / PAGE_SIZE);
   updatePaginationDiv(currentPage, numPages);
   filter_div();
+  displayNumberOfPokemon(pokemons.length);
 
   // pop up modal when clicking on a pokemon card
   // add event listener to each pokemon card
